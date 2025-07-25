@@ -7,6 +7,7 @@
     If you have any Questions, ideas or Comments Please Send it via -> https://go.openspeedtest.com/SendMessage
 */ 
 window.onload = function() {
+  console.log("OpenSpeedTest - Custom Modified Version with Event Support - by Rajib");
   var appSVG = document.getElementById("OpenSpeedTest-UI");
   appSVG.parentNode.replaceChild(appSVG.contentDocument.documentElement, appSVG);
   ostOnload();
@@ -154,6 +155,7 @@ window.onload = function() {
     function uiLoaded(argument) {
       Status = "Loaded";
       console.log("Developed by Vishnu. Email --\x3e me@vishnu.pro");
+      console.log("Customized by RajibTheKing. Email --\x3e aporba.das@gmail.com")
     }
   };
   openSpeedtestShow.prototype.Symbol = function(dir) {
@@ -1006,6 +1008,41 @@ window.onload = function() {
         }
         if (Status === "SendR") {
           Show.showStatus("All done");
+          
+          // Fire custom event with test results
+          var testResults = {
+            downloadSpeed: downloadSpeed || 0,
+            uploadSpeed: uploadSpeed || 0,
+            ping: pingEstimate || 0,
+            jitter: jitterEstimate || 0,
+            downloadDataUsed: (dataUsedfordl / 1048576) || 0, // MB
+            uploadDataUsed: (dataUsedforul / 1048576) || 0, // MB
+            timestamp: new Date().toISOString(),
+            testType: SelectTest || 'full'
+          };
+
+          console.log('TheKing--> Test Results:', testResults);
+          
+          // Dispatch custom event for iframe communication
+          var speedTestCompleteEvent = new CustomEvent('openspeedtest-complete', {
+            detail: testResults,
+            bubbles: true
+          });
+          window.dispatchEvent(speedTestCompleteEvent);
+          
+          // Also try to communicate with parent window if in iframe
+          try {
+            if (window.parent && window.parent !== window) {
+              window.parent.postMessage({
+                type: 'openspeedtest-complete',
+                data: testResults
+              }, '*');
+            }
+          } catch (e) {
+            // Ignore cross-origin errors
+            console.log('Could not communicate with parent window:', e.message);
+          }
+          
           var dummyElement = document.createElement("div");
           dummyElement.innerHTML = '<a xlink:href="https://openspeedtest.com?ref=Self-Hosted-Outro&run=5" style="cursor: pointer" target="_blank"></a>';
           var htmlAnchorElement = dummyElement.querySelector("a");
